@@ -6,18 +6,26 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.Collections;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
@@ -26,6 +34,8 @@ import sf.codingcompetition2020.structures.Agent;
 import sf.codingcompetition2020.structures.Claim;
 import sf.codingcompetition2020.structures.Customer;
 import sf.codingcompetition2020.structures.Vendor;
+
+import static java.util.stream.Collectors.toList;
 
 public class CodingCompCsvUtil {
   private final String agentListKey = "agentList";
@@ -38,28 +48,55 @@ public class CodingCompCsvUtil {
 	 * @param classType -- Class of entries being read in.
 	 * @return -- List of entries being returned.
 	 */
-	public <T> List<T> readCsvFile(String filePath, Class<T> classType) throws Exception {
-	  URL url = this.getClass().getResource(filePath);
-		URI uri = new URI(url.toString());
-		File file = new File(uri.getPath());
-		FileInputStream fis = new FileInputStream(file);
-		byte[] data = new byte[(int) file.length()];
+	public <T> List<T> readCsvFile(String filePath, Class<T> classType)  {
 		try {
-			fis.read(data);
+			//URL url = this.getClass().getResource(filePath);
+			//URI uri = new URI(url.toString());
+			//File file = new File(uri.getPath());
+			File file = new File(filePath);
+
+			ObjectMapper mapper = new CsvMapper().configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
+					.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true)
+					.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+			//CsvSchema schema = mapper.schemaFor(classType); // schema from 'Pojo' definition
+			CsvSchema schema = CsvSchema.emptySchema().withHeader();
+
+			MappingIterator<T> it = mapper.readerFor(classType)
+					.with(schema)
+					.readValues(file);
+			List<T> ans = it.readAll();
+			System.out.println(ans);
+			System.out.println(ans.size());
+			System.out.println(ans.get(0));
+			return ans;
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			if (fis != null) {
-				fis.close();
-			}
+			throw new IllegalStateException("Yeeto");
 		}
-		String[] contents = new String(data, "UTF-8").split("\\r?\\n");
 
-		List<T> entries = new ArrayList<>();
-		for(String entry : contents) {
-			policies.add(new Policy(policy.split(",")));
-		}
-		return policies;
+
+
+//	  URL url = this.getClass().getResource(filePath);
+//		URI uri = new URI(url.toString());
+//		File file = new File(uri.getPath());
+//		FileInputStream fis = new FileInputStream(file);
+//		byte[] data = new byte[(int) file.length()];
+//		try {
+//			fis.read(data);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		} finally {
+//			if (fis != null) {
+//				fis.close();
+//			}
+//		}
+//		String[] contents = new String(data, "UTF-8").split("\\r?\\n");
+//
+//		List<T> entries = new ArrayList<>();
+//		for(String entry : contents) {
+//			entries.add(new T(entry.split(",")));
+//		}
+//		return entries;
 	}
 
 
@@ -72,12 +109,12 @@ public class CodingCompCsvUtil {
 	public int getAgentCountInArea(String filePath, String area) {
     return readCsvFile(filePath, Agent.class)
         .stream()
-        .filter(a -> a.getArea() == area)
-        .collect();
+        .filter(a -> a.getArea().equals(area))
+        .collect(toList()).size();
 	}
 
 
-	/* #3
+	/** #3
 	 * getAgentsInAreaThatSpeakLanguage() -- Return a list of agents from a given area, that speak a certain language.
 	 * @param filePath -- Path to file being read in.
 	 * @param area -- The area from which the agents should be counted.
@@ -87,25 +124,26 @@ public class CodingCompCsvUtil {
 	public List<Agent> getAgentsInAreaThatSpeakLanguage(String filePath, String area, String language) {
     return readCsvFile(filePath, Agent.class)
         .stream()
-        .filter(a -> a.getArea() == area)
-        .filter(a -> a.getLanguage().equals(langage))
-        .collect();
+        .filter(a -> a.getArea().equals(area))
+        .filter(a -> a.getLanguage().equals(language))
+        .collect(toList());
 	}
 
 
-	/* #4
+	/** #4
 	 * countCustomersFromAreaThatUseAgent() -- Return the number of individuals from an area that use a certain agent.
-	 * @param filePath -- Path to file being read in.
+	 * @param csvFilePaths -- Path to file being read in.
 	 * @param customerArea -- The area from which the customers should be counted.
 	 * @param agentFirstName -- First name of agent.
 	 * @param agentLastName -- Last name of agent.
 	 * @return -- The number of customers that use a certain agent in a given area.
+	 * @throws NoSuchElementException if the specified agent is not found in the given agent csv file.
 	 */
 	public short countCustomersFromAreaThatUseAgent(Map<String,String> csvFilePaths, String customerArea, String agentFirstName, String agentLastName) {
     List<Agent> agents = readCsvFile(csvFilePaths.get(agentListKey), Agent.class);
 
     // find the agent in question
-    Agent agent;
+    Agent agent = null;
     for (Agent a : agents) {
       if (a.getFirstName().equals(agentFirstName) && a.getLastName().equals(agentLastName)) {
         agent = a;
@@ -113,15 +151,16 @@ public class CodingCompCsvUtil {
       }
     }
     if (agent == null) { // this agent does not exist in the agents file
-      throw new Exception("TODO Rename me");
+      throw new NoSuchElementException("The specified agent: " + agentFirstName + " " + agentLastName + " was not found in the given agent csv file.");
     }
 
-    List<Customer> customers =  readCsvFile(csvFilePaths.get(customerListKey), Customer.class)
+		final int agentId = agent.getAgentId();
+		List<Customer> customers = readCsvFile(csvFilePaths.get(customerListKey), Customer.class)
         .stream()
-        .filter(customer -> customer.getArea().equals(customerArea) && customer.getAgent().equals(agent))
-        .collect(Collectors.toList());
+        .filter(customer -> customer.getArea().equals(customerArea) && customer.getAgentId() == (agentId))
+        .collect(toList());
 
-    return customers.size();
+    return (short) customers.size();
 	}
 
 
@@ -132,10 +171,12 @@ public class CodingCompCsvUtil {
 	 * @return -- List of customers retained for a given number of years, in ascending order of policy cost.
 	 */
 	public List<Customer> getCustomersRetainedForYearsByPlcyCostAsc(String customerFilePath, short yearsOfService) {
-    return Collections.sort(readCsvFile(filePath, Customer.class)
-      .stream()
-      .filter(c -> c.getYearsOfService() == yearsOfService)
-      .collect());
+		List<Customer> filteredCustomers = readCsvFile(customerFilePath, Customer.class)
+				.stream()
+				.filter(c -> c.getYearsOfService() == yearsOfService)
+				.collect(toList());
+		Collections.sort(filteredCustomers);
+		return filteredCustomers;
 	}
 
 
@@ -171,11 +212,10 @@ public class CodingCompCsvUtil {
 	public List<Vendor> getVendorsWithGivenRatingThatAreInScope(String filePath, String area, boolean inScope, int vendorRating) {
 		return readCsvFile(filePath, Vendor.class)
         .stream()
-        .filter(v -> v.getVendorRating() == vendorRating)
-        .filter(v -> !inScope || (v.isInScope()))
-        .collect();
-
-
+				.filter(v -> v.getArea().equals(area))
+        .filter(v -> v.getVendorRating() >= vendorRating)
+        .filter(v -> (!inScope) || (v.isInScope()))
+        .collect(toList());
 	}
 
 
@@ -192,9 +232,9 @@ public class CodingCompCsvUtil {
     return readCsvFile(filePath, Customer.class)
         .stream()
         .filter(c -> c.getVehiclesInsured() > vehiclesInsured)
-        .filter(c -> c.getDependents().size() <= dependents))
+        .filter(c -> c.getDependents().size() <= dependents)
         .filter(c -> (c.getAge() >= 40 && c.getAge() <= 50))
-        .collect();
+        .collect(toList());
 	}
 
 
@@ -204,7 +244,7 @@ public class CodingCompCsvUtil {
 	 * of reviews for the agent.
 	 * @param filePath -- Path to file being read in.
 	 * @param agentRank -- The rank of the agent being requested.
-	 * @return -- Agent ID of agent with the given rank. -1 if there is not an agent with the given id
+	 * @return -- Agent ID of agent with the given rank.
 	 */
 	public int getAgentIdGivenRank(String filePath, int agentRank) {
 		List<Customer> customers = readCsvFile(filePath, Customer.class);
@@ -215,14 +255,27 @@ public class CodingCompCsvUtil {
       agentCount.put(agentId, agentCount.getOrDefault(agentId, 0) + 1);
       ratingSum.put(agentId, ratingSum.getOrDefault(agentId, 0) + customer.getAgentRating());
     }
-    // shouldn't agent rank be a double?
+
+		Map<Integer, Double> agentRatings = new HashMap<>();
+
     for (int agentId : ratingSum.keySet()) {
-      int agentRating = ratingSum.get(agentId) / agentCount.get(agentId);
-      if (agentRating == agentRank) {
-        return agentId;
-      }
+      double agentRating = ratingSum.get(agentId) * 1.0 / agentCount.get(agentId);
+      agentRatings.put(agentId, agentRating);
     }
-    return -1;
+
+    LinkedHashMap<Integer, Double> sortedAgentRating = new LinkedHashMap<>();
+
+    agentRatings.entrySet()
+				.stream()
+				.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+				.forEachOrdered(x -> sortedAgentRating.put(x.getKey(), x.getValue()));
+
+    Iterator<Entry<Integer, Double>> iterator = sortedAgentRating.entrySet().iterator();
+    System.out.println(sortedAgentRating);
+    for(int i = 1; i < agentRank; i++) {
+    	iterator.next();
+		}
+    return iterator.next().getKey();
 	}
 
 
@@ -233,24 +286,28 @@ public class CodingCompCsvUtil {
 	 * @return -- List of customers who’ve filed a claim within the last <numberOfMonths>.
 	 */
 	public List<Customer> getCustomersWithClaims(Map<String,String> csvFilePaths, short monthsOpen) {
-    List<Claims> claimIds = readCsvFile(csvFilePaths.get(claimListKey), Claims.class)
+    List<Claim> claims = readCsvFile(csvFilePaths.get(claimListKey), Claim.class)
       .stream()
-      .filter(c -> c.getMonthsOpen() <= getMonthsOpen)
-      .collect();
+      .filter(c -> c.getMonthsOpen() <= monthsOpen)
+      .collect(toList());
 
     Map<Integer, Customer> idToCustomer = new HashMap<>();
 
-    for (Customer customer: csvFilePaths.get(csvFilePaths.get(customerListKey), Customer.class) {
+    List<Customer> customers = readCsvFile(csvFilePaths.get(customerListKey), Customer.class);
+    for (Customer customer: customers) {
       idToCustomer.put(customer.getCustomerId(), customer);
     }
 
-    List<Customer> customerList = new ArrayList<>();
+    Set<Customer> customerSet = new HashSet<>();
 
-    for (Claims claim: claimIds) {
-      customerList.add(idToCustomer.get(claim.getCustomerId()));
+    for (Claim claim: claims) {
+
+      customerSet.add(idToCustomer.get(claim.getCustomerId()));
     }
 
-    return customerList;
+
+
+    return new ArrayList<>(customerSet);
 	}
 
 }

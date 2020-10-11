@@ -3,12 +3,13 @@ package sf.codingcompetition2020.structures;
 import java.util.ArrayList;
 import java.util.List;
 import java.lang.Comparable;
+import java.util.Objects;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class Customer extends Comparable {
+public class Customer implements Comparable<Customer> {
 	private int customerId;
 	private String firstName;
 	private String lastName;
@@ -21,10 +22,58 @@ public class Customer extends Comparable {
 	private boolean homePolicy;
 	private boolean autoPolicy;
 	private boolean rentersPolicy;
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof Customer)) return false;
+		Customer customer = (Customer) o;
+		return customerId == customer.customerId &&
+				age == customer.age &&
+				agentId == customer.agentId &&
+				agentRating == customer.agentRating &&
+				homePolicy == customer.homePolicy &&
+				autoPolicy == customer.autoPolicy &&
+				rentersPolicy == customer.rentersPolicy &&
+				yearsOfService == customer.yearsOfService &&
+				Objects.equals(firstName, customer.firstName) &&
+				Objects.equals(lastName, customer.lastName) &&
+				Objects.equals(area, customer.area) &&
+				Objects.equals(primaryLanguage, customer.primaryLanguage) &&
+				Objects.equals(dependents, customer.dependents) &&
+				Objects.equals(totalMonthlyPremium, customer.totalMonthlyPremium) &&
+				Objects.equals(vehiclesInsured, customer.vehiclesInsured);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(customerId);
+	}
+
 	private String totalMonthlyPremium;
 	private short yearsOfService;
 	private Integer vehiclesInsured;
 
+	@Override
+	public String toString() {
+		return "Customer{" +
+				"customerId=" + customerId +
+				", firstName='" + firstName + '\'' +
+				", lastName='" + lastName + '\'' +
+				", age=" + age +
+				", area='" + area + '\'' +
+				", agentId=" + agentId +
+				", agentRating=" + agentRating +
+				", primaryLanguage='" + primaryLanguage + '\'' +
+				", dependents=" + dependents +
+				", homePolicy=" + homePolicy +
+				", autoPolicy=" + autoPolicy +
+				", rentersPolicy=" + rentersPolicy +
+				", totalMonthlyPremium='" + totalMonthlyPremium + '\'' +
+				", yearsOfService=" + yearsOfService +
+				", vehiclesInsured=" + vehiclesInsured +
+				'}';
+	}
 
 	public int getCustomerId() {
 		return customerId;
@@ -88,13 +137,7 @@ public class Customer extends Comparable {
 
 	@Override
 	public int compareTo(Customer customer) {
-		if (customer.getTotalMonthlyPremium() < getTotalMonthlyPremium()) {
-			return 1;
-		} else if (customer.getTotalMonthlyPremium() > getTotalMonthlyPremium()) {
-			return -1;
-		} else {
-			return 0;
-		}
+		return totalMonthlyPremium.compareTo(customer.getTotalMonthlyPremium());
 	}
 
 }

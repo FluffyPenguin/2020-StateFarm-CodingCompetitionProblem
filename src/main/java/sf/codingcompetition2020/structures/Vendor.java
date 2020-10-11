@@ -22,4 +22,13 @@ public class Vendor {
 		return inScope;
 	}
 
+	@Override
+	public String toString() {
+		return "Vendor{" +
+				"vendorId=" + vendorId +
+				", area='" + area + '\'' +
+				", vendorRating=" + vendorRating +
+				", inScope=" + inScope +
+				'}';
+	}
 }

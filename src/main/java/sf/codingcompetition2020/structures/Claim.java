@@ -22,4 +22,13 @@ public class Claim {
 		return monthsOpen;
 	}
 
+	@Override
+	public String toString() {
+		return "Claim{" +
+				"claimId=" + claimId +
+				", customerId=" + customerId +
+				", closed=" + closed +
+				", monthsOpen=" + monthsOpen +
+				'}';
+	}
 }

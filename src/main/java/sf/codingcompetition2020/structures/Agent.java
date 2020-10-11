@@ -47,4 +47,15 @@ public class Agent {
 	public String getLastName() {
 		return lastName;
 	}
+
+	@Override
+	public String toString() {
+		return "Agent{" +
+				"agentId=" + agentId +
+				", area='" + area + '\'' +
+				", language='" + language + '\'' +
+				", firstName='" + firstName + '\'' +
+				", lastName='" + lastName + '\'' +
+				'}';
+	}
 }
