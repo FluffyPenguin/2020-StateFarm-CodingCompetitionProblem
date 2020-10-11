@@ -29,11 +29,11 @@ public class DataViz extends Application {
     private static int[] pos2 = {150, 600};
     private static List<Object> currentItems;
 
-    private final String agentListKey = "agentList.csv";
-    private final String claimListKey = "claimList.csv";
-    private final String customerListKey = "customerList.csv";
+    private static final String agentListKey = "agentList.csv";
+    private static final String claimListKey = "claimList.csv";
+    private static final String customerListKey = "customerList.csv";
 
-    private CodingCompCsvUtil csvUtil;
+    private static CodingCompCsvUtil csvUtil;
 
     public void start(Stage primaryStage) {
         csvUtil = new CodingCompCsvUtil();
@@ -77,6 +77,7 @@ public class DataViz extends Application {
     private static void onComboBoxChange(ComboBox comboBox, VBox vBox) {
         EventHandler<ActionEvent> event = new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
+                ComboBox chooseConstant2;
                 if (currentItems.size() != 0) {
                     while (currentItems.size() != 0) {
                         vBox.getChildren().remove(currentItems.get(0));
@@ -108,6 +109,7 @@ public class DataViz extends Application {
 
                     EventHandler<ActionEvent> event = new EventHandler<ActionEvent>() {
                         public void handle(ActionEvent e) {
+                            ComboBox chooseConstant2;
                             String[] arr1 = {"Arabic", "Hindi", "Mandarin", "French", "Russian", "English", "Spanish"};
                             String[] arr2 = {"area-1", "area-2", "area-3", "area-4", "area-5"};
                             if (chooseConstant1.getValue().equals("Language")) {
@@ -119,7 +121,7 @@ public class DataViz extends Application {
                                     options2.add(arr2[i]);
                                 }
                             }
-                            ComboBox chooseConstant2 = new ComboBox(options2);
+                            chooseConstant2 = new ComboBox(options2);
                             chooseConstant2.setTranslateX(pos2[0]);
                             chooseConstant2.setTranslateY(pos2[1]);
 
@@ -127,14 +129,14 @@ public class DataViz extends Application {
                                 public void handle(ActionEvent e) {
                                     ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
                                     if (chooseConstant1.getValue().equals("Language")) {
-                                        String current = chooseConstant2.getValue();
+                                        String current = (String) chooseConstant2.getValue();
                                         for (int i = 0; i < arr1.length; i++) {
-                                            pieChartData.addAll(new PieChart.Data(arr1[i], csvUtil.getAgentsInAreaThatSpeakLanguage(agentListKey, arr1[i], current)));
+                                            pieChartData.addAll(new PieChart.Data(arr1[i], csvUtil.getAgentsInAreaThatSpeakLanguage(agentListKey, arr1[i], current).size()));
                                         }
                                     } else {
-                                        String current = chooseConstant2.getValue();
+                                        String current = (String) chooseConstant2.getValue();
                                         for (int i = 0; i < arr1.length; i++) {
-                                            pieChartData.addAll(new PieChart.Data(arr2[i], csvUtil.getAgentsInAreaThatSpeakLanguage(agentListKey, arr2[i], current)));
+                                            pieChartData.addAll(new PieChart.Data(arr2[i], csvUtil.getAgentsInAreaThatSpeakLanguage(agentListKey, arr2[i], current).size()));
                                         }
                                     }
                                     final PieChart chart = new PieChart(pieChartData);
@@ -184,8 +186,8 @@ public class DataViz extends Application {
 
                     EventHandler<ActionEvent> event = new EventHandler<ActionEvent>() {
                         public void handle(ActionEvent e) {
-                            int split = chooseConstant1.getValue().indexOf(" ");
-                            String firstName = chooseConstant1.getValue().substring(0, split);
+                            int split = chooseConstant1.getText().indexOf(" ");
+                            String firstName = chooseConstant1.getText().substring(0, split);
                             String lastName = chooseConstant2.getValue().substring(split + 1);
                             String[] areaNames = {"area-1", "area-2", "area-3", "area-4", "area-5"};
                             ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
