@@ -5,5 +5,21 @@ public class Vendor {
 	private String area;
 	private int vendorRating;
 	private boolean inScope;
-	
+
+	public int getVendorId() {
+		return vendorId;
+	}
+
+	public String getArea() {
+		return area;
+	}
+
+	public int getVendorRating() {
+		return vendorRating;
+	}
+
+	public boolean isInScope() {
+		return inScope;
+	}
+
 }
