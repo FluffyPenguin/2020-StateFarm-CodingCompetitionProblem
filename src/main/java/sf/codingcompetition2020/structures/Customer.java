@@ -5,6 +5,8 @@ import java.util.List;
 import java.lang.Comparable;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +24,13 @@ public class Customer implements Comparable<Customer> {
 	private boolean homePolicy;
 	private boolean autoPolicy;
 	private boolean rentersPolicy;
+
+	@JsonCreator
+	public static Customer fromJson(String value) {
+		String[] vals = value.split(",");
+		System.out.println(value);
+		return null;
+	}
 
 	@Override
 	public boolean equals(Object o) {
@@ -140,4 +149,14 @@ public class Customer implements Comparable<Customer> {
 		return totalMonthlyPremium.compareTo(customer.getTotalMonthlyPremium());
 	}
 
+
+	public void setDependents(String dependents) {
+		String split = "}";
+		String[] splitted = dependents.split(split);
+		List<Dependent> temp = new ArrayList<>();
+		for (int i = 1; i < splitted.length; i++) {
+			temp.add(new Dependent());
+		}
+		this.dependents = temp;
+	}
 }

@@ -14,7 +14,11 @@ public class Dependent {
 	public Dependent () {
 
 	}
-	public Dependent (String csv) throws IOException {
+	public Dependent(String str) {
+		this.firstName = str;
+		this.lastName = str;
+		System.out.println(str);
+	}
 //		CsvMapper mapper = new CsvMapper();
 //		CsvSchema schema = mapper.schemaFor(Dependent.class);
 //		MappingIterator<Dependent> it = mapper.readerFor(Dependent.class)
@@ -23,7 +27,6 @@ public class Dependent {
 //		Dependent d = it.next();
 //		this.firstName = d.firstName;
 //		this.lastName = d.lastName;
-	}
 	public String getFirstName() {
 		return firstName;
 	}

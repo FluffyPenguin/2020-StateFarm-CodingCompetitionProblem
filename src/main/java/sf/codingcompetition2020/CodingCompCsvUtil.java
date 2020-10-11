@@ -27,12 +27,15 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 
 import sf.codingcompetition2020.structures.Agent;
 import sf.codingcompetition2020.structures.Claim;
 import sf.codingcompetition2020.structures.Customer;
+import sf.codingcompetition2020.structures.Dependent;
 import sf.codingcompetition2020.structures.Vendor;
 
 import static java.util.stream.Collectors.toList;
@@ -55,11 +58,11 @@ public class CodingCompCsvUtil {
 			//File file = new File(uri.getPath());
 			File file = new File(filePath);
 
-			ObjectMapper mapper = new CsvMapper().configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
-					.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true)
-					.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+			CsvMapper mapper = new CsvMapper();
+			mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
 			//CsvSchema schema = mapper.schemaFor(classType); // schema from 'Pojo' definition
 			CsvSchema schema = CsvSchema.emptySchema().withHeader();
+			TypeFactory typeFactory = mapper.getTypeFactory();
 
 			MappingIterator<T> it = mapper.readerFor(classType)
 					.with(schema)
