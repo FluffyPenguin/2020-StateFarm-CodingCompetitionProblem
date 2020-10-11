@@ -8,3 +8,5 @@ Document and describe any enhancements included to help the judges properly grad
 
 Feedback for the coding competition?  Things you would like to see in future events?
 Some coding questions were worded weirdly and hard to understand.
+For example in getVendorsWithGivenRatingThatAreInScope it was not made clear that these vendors should be filtered to have a higher or equal than
+rating. The problem statement made it seem like the vendors should be filtered to as strict equal for the rating filter.
